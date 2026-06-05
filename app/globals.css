@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 20 20% 5%;
+  --foreground: 38 24% 92%;
+  --card: 24 24% 9%;
+  --card-foreground: 38 24% 92%;
+  --primary: 38 74% 63%;
+  --primary-foreground: 25 24% 7%;
+  --secondary: 24 24% 15%;
+  --secondary-foreground: 38 24% 92%;
+  --muted: 28 22% 13%;
+  --muted-foreground: 36 13% 67%;
+  --accent: 92 13% 42%;
+  --accent-foreground: 36 32% 94%;
+  --border: 34 22% 22%;
+  --input: 34 22% 22%;
+  --ring: 38 74% 63%;
+  --radius: 0.5rem;
+
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+  background: hsl(var(--background));
+}
+
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(18, 13, 9, 0.98), rgba(10, 8, 7, 1)),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(196, 145, 71, 0.38);
+  color: #fff7df;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .cinematic-grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .cinematic-grain::before {
+    pointer-events: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.18;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  }
+}
