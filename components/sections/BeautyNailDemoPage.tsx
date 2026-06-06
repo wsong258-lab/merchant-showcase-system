@@ -171,7 +171,9 @@ function InfoPill({
     <div className="flex items-start gap-3 rounded-md border border-[var(--beauty-line)] bg-white/86 p-3 shadow-[0_12px_34px_rgba(116,68,72,0.08)]">
       <Icon className="mt-0.5 size-5 shrink-0 text-[var(--beauty-rose-deep)]" />
       <div className="min-w-0">
-        <p className="truncate font-medium text-[var(--beauty-ink)]">{title}</p>
+        <p className="text-sm font-medium leading-6 text-[var(--beauty-ink)]">
+          {title}
+        </p>
         <p className="mt-1 text-xs leading-5 text-[var(--beauty-muted)]">
           {detail}
         </p>
@@ -255,8 +257,8 @@ export function BeautyNailDemoPage({
         </div>
       </header>
 
-      <section className="overflow-hidden bg-[linear-gradient(180deg,#fffaf6_0%,#f8efe9_100%)] pb-12 pt-7 sm:pt-10 lg:pb-16">
-        <div className="container grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+      <section className="overflow-hidden bg-[linear-gradient(180deg,#fffaf6_0%,#f8efe9_100%)] pb-12 pt-8 sm:pt-12 lg:pb-16 lg:pt-14">
+        <div className="container grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
             <Reveal>
               <Badge className="border-[var(--beauty-line)] bg-white text-[var(--beauty-rose-deep)] normal-case tracking-normal">
@@ -301,11 +303,42 @@ export function BeautyNailDemoPage({
                 </Button>
               </div>
             </Reveal>
+
+            <Reveal delay={0.08}>
+              <div className="mt-7 hidden gap-3 lg:grid lg:grid-cols-3">
+                <InfoPill
+                  icon={Clock3}
+                  title={data.contact.status}
+                  detail="预约制，到店前先确认"
+                />
+                <InfoPill
+                  icon={MapPin}
+                  title={data.contact.shortAddress}
+                  detail="地铁商圈，电梯上楼"
+                />
+                <InfoPill
+                  icon={BadgeCheck}
+                  title="价格先看清"
+                  detail="复杂款式看图确认"
+                />
+              </div>
+            </Reveal>
+
+            <Stagger className="mt-6 hidden flex-wrap gap-2 lg:flex">
+              {data.hero.highlights.map((item) => (
+                <StaggerItem
+                  key={item}
+                  className="rounded-full border border-[var(--beauty-line)] bg-white px-3 py-2 text-sm text-[var(--beauty-muted)]"
+                >
+                  {item}
+                </StaggerItem>
+              ))}
+            </Stagger>
           </div>
 
-          <Reveal delay={0.08} className="lg:row-span-2">
+          <Reveal delay={0.08}>
             <div className="relative">
-              <div className="relative aspect-[5/4] overflow-hidden rounded-lg border border-white bg-white shadow-[0_24px_80px_rgba(116,68,72,0.16)] lg:aspect-[4/5]">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-lg border border-white bg-white shadow-[0_24px_80px_rgba(116,68,72,0.16)] sm:aspect-[5/4] lg:aspect-[16/11]">
                 <Image
                   src={data.hero.image.src}
                   alt={data.hero.image.alt}
@@ -321,7 +354,7 @@ export function BeautyNailDemoPage({
                   </p>
                 </div>
               </div>
-              <div className="absolute -bottom-5 left-4 right-4 rounded-lg border border-[var(--beauty-line)] bg-white p-4 shadow-[0_18px_55px_rgba(116,68,72,0.14)] sm:left-8 sm:right-auto sm:w-72">
+              <div className="absolute bottom-4 left-4 right-4 hidden rounded-lg border border-white/70 bg-white/92 p-4 shadow-[0_18px_55px_rgba(116,68,72,0.14)] backdrop-blur sm:left-6 sm:right-auto sm:block sm:w-80">
                 <p className="text-sm font-medium text-[var(--beauty-ink)]">
                   {data.brand.tagline}
                 </p>
@@ -332,9 +365,9 @@ export function BeautyNailDemoPage({
             </div>
           </Reveal>
 
-          <div className="lg:col-start-1">
+          <div className="lg:hidden">
             <Reveal delay={0.08}>
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="grid gap-3">
                 <InfoPill
                   icon={Clock3}
                   title={data.contact.status}
@@ -376,7 +409,7 @@ export function BeautyNailDemoPage({
           />
 
           <Reveal delay={0.08}>
-            <div className="mt-7 flex gap-2 overflow-x-auto pb-2">
+            <div className="mt-7 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {data.works.categories.map((category) => (
                 <button
                   key={category}

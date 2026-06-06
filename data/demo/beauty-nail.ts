@@ -1,14 +1,14 @@
 import type { BeautyNailDemoData } from "@/data/demo/types";
 
 const nailImages = {
-  hero: "/demo/beauty-nail/hero.jpg",
-  catEye: "/demo/beauty-nail/cat-eye.jpg",
-  french: "/demo/beauty-nail/french.jpg",
-  detail: "/demo/beauty-nail/detail.jpg",
-  lash: "/demo/beauty-nail/lash.jpg",
-  tools: "/demo/beauty-nail/tools.jpg",
-  facial: "/demo/beauty-nail/facial.jpg",
-  studio: "/demo/beauty-nail/studio.jpg",
+  hero: "/demo/beauty-nail/hero.png",
+  catEye: "/demo/beauty-nail/cat-eye.png",
+  french: "/demo/beauty-nail/french.png",
+  detail: "/demo/beauty-nail/detail.png",
+  lash: "/demo/beauty-nail/lash.png",
+  tools: "/demo/beauty-nail/tools.png",
+  facial: "/demo/beauty-nail/facial.png",
+  studio: "/demo/beauty-nail/studio.png",
 };
 
 export const beautyNailDemo = {
