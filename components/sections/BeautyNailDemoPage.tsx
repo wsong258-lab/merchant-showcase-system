@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, FormEvent, ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   BadgeCheck,
@@ -43,13 +43,22 @@ type SectionHeadingProps = {
 function Reveal({
   children,
   className,
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   y?: number;
 }) {
-  return <div className={cn(className)}>{children}</div>;
+  return (
+    <div
+      data-beauty-reveal
+      className={cn(className)}
+      style={{ "--beauty-delay": `${delay}s` } as CSSProperties}
+    >
+      {children}
+    </div>
+  );
 }
 
 function Stagger({
@@ -59,18 +68,31 @@ function Stagger({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={className}>{children}</div>;
+  return (
+    <div data-beauty-stagger className={className}>
+      {children}
+    </div>
+  );
 }
 
 function StaggerItem({
   children,
   className,
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
 }) {
-  return <div className={className}>{children}</div>;
+  return (
+    <div
+      data-beauty-reveal
+      className={className}
+      style={{ "--beauty-delay": `${delay}s` } as CSSProperties}
+    >
+      {children}
+    </div>
+  );
 }
 
 function SectionHeading({
@@ -182,10 +204,113 @@ function InfoPill({
   );
 }
 
+function useBeautyMotion() {
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>("[data-beauty-page]");
+
+    if (!root) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reducedMotion) {
+      root.classList.add("beauty-reduced-motion");
+      return;
+    }
+
+    root.classList.add("beauty-motion-ready");
+
+    const updateScrollState = () => {
+      const scrollY = window.scrollY;
+      const scrollableHeight = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+
+      root.classList.toggle("beauty-page-scrolled", scrollY > 10);
+      root.style.setProperty(
+        "--beauty-scroll-ratio",
+        `${Math.min(1, scrollY / scrollableHeight)}`,
+      );
+      root.style.setProperty(
+        "--beauty-hero-shift",
+        `${Math.max(-20, scrollY * -0.035)}px`,
+      );
+    };
+
+    let observer: IntersectionObserver | undefined;
+    const observeRevealItem = (item: HTMLElement) => {
+      if (item.classList.contains("is-visible")) {
+        return;
+      }
+
+      if (observer) {
+        observer.observe(item);
+      } else {
+        item.classList.add("is-visible");
+      }
+    };
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) {
+            return;
+          }
+
+          if (node.matches("[data-beauty-reveal]")) {
+            observeRevealItem(node);
+          }
+
+          node
+            .querySelectorAll<HTMLElement>("[data-beauty-reveal]")
+            .forEach(observeRevealItem);
+        });
+      });
+    });
+
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer?.unobserve(entry.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+      );
+    }
+
+    root
+      .querySelectorAll<HTMLElement>("[data-beauty-reveal]")
+      .forEach(observeRevealItem);
+
+    mutationObserver.observe(root, { childList: true, subtree: true });
+
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    return () => {
+      observer?.disconnect();
+      mutationObserver?.disconnect();
+      window.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, []);
+}
+
 export function BeautyNailDemoPage({
   data,
   theme,
 }: BeautyNailDemoPageProps) {
+  useBeautyMotion();
+
   const [activeCategory, setActiveCategory] = useState(
     data.works.categories[0],
   );
@@ -214,10 +339,148 @@ export function BeautyNailDemoPage({
   return (
     <main
       id="top"
+      data-beauty-page
       style={theme.cssVars as CSSProperties}
-      className={theme.sectionClassName}
+      className={cn(theme.sectionClassName, "beauty-page scroll-smooth")}
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--beauty-line)] bg-[rgba(255,250,246,0.92)] backdrop-blur-xl">
+      <style>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
+        .beauty-page {
+          --beauty-scroll-ratio: 0;
+        }
+
+        [data-beauty-page] [data-beauty-reveal] {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-reveal] {
+          opacity: 0;
+          transform: translate3d(0, 18px, 0);
+          transition:
+            opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+            transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+          transition-delay: var(--beauty-delay, 0s);
+          will-change: opacity, transform;
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-reveal].is-visible,
+        [data-beauty-page].beauty-reduced-motion [data-beauty-reveal] {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-stagger] > [data-beauty-reveal]:nth-child(2) {
+          transition-delay: calc(var(--beauty-delay, 0s) + 60ms);
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-stagger] > [data-beauty-reveal]:nth-child(3) {
+          transition-delay: calc(var(--beauty-delay, 0s) + 120ms);
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-stagger] > [data-beauty-reveal]:nth-child(4) {
+          transition-delay: calc(var(--beauty-delay, 0s) + 180ms);
+        }
+
+        [data-beauty-page].beauty-motion-ready [data-beauty-stagger] > [data-beauty-reveal]:nth-child(n+5) {
+          transition-delay: calc(var(--beauty-delay, 0s) + 220ms);
+        }
+
+        .beauty-site-header {
+          transition:
+            box-shadow 260ms ease,
+            background-color 260ms ease,
+            border-color 260ms ease;
+        }
+
+        .beauty-scroll-progress {
+          position: absolute;
+          inset-inline: 0;
+          bottom: -1px;
+          height: 2px;
+          transform: scaleX(var(--beauty-scroll-ratio));
+          transform-origin: left center;
+          background: linear-gradient(
+            90deg,
+            rgba(143, 62, 75, 0),
+            rgba(143, 62, 75, 0.88),
+            rgba(200, 154, 129, 0.9)
+          );
+          transition: transform 120ms linear;
+        }
+
+        .beauty-page-scrolled .beauty-site-header {
+          border-color: rgba(149, 101, 96, 0.28);
+          box-shadow: 0 12px 34px rgba(116, 68, 72, 0.1);
+        }
+
+        .beauty-hero-media {
+          transform: translate3d(0, var(--beauty-hero-shift, 0px), 0);
+          transition: transform 220ms ease-out;
+          will-change: transform;
+        }
+
+        .beauty-action {
+          transition:
+            transform 180ms ease,
+            box-shadow 180ms ease,
+            background-color 180ms ease,
+            border-color 180ms ease;
+        }
+
+        .beauty-action:active {
+          transform: translateY(0) scale(0.99);
+        }
+
+        .beauty-work-card {
+          transition:
+            transform 260ms ease,
+            box-shadow 260ms ease,
+            border-color 260ms ease;
+        }
+
+        .beauty-filter {
+          transition:
+            transform 180ms ease,
+            color 180ms ease,
+            background-color 180ms ease,
+            border-color 180ms ease,
+            box-shadow 180ms ease;
+        }
+
+        .beauty-filter:active {
+          transform: scale(0.98);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .beauty-action:hover,
+          .beauty-filter:hover {
+            transform: translateY(-1px);
+          }
+
+          .beauty-work-card:hover {
+            border-color: rgba(143, 62, 75, 0.36);
+            box-shadow: 0 22px 64px rgba(116, 68, 72, 0.14);
+            transform: translateY(-4px);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .beauty-hero-media,
+          .beauty-action,
+          .beauty-work-card,
+          .beauty-filter,
+          .beauty-scroll-progress,
+          [data-beauty-page] [data-beauty-reveal] {
+            transition: none !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
+      <header className="beauty-site-header sticky top-0 z-40 border-b border-[var(--beauty-line)] bg-[rgba(255,250,246,0.92)] backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between gap-3">
           <a href="#top" className="flex min-w-0 items-center gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--beauty-rose-deep)] font-display text-lg text-white shadow-[0_12px_34px_rgba(143,62,75,0.22)]">
@@ -247,7 +510,7 @@ export function BeautyNailDemoPage({
 
           <Button
             asChild
-            className="hidden bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)] sm:inline-flex"
+            className="beauty-action hidden bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)] sm:inline-flex"
           >
             <a href="#reservation">
               <CalendarCheck />
@@ -255,6 +518,7 @@ export function BeautyNailDemoPage({
             </a>
           </Button>
         </div>
+        <span className="beauty-scroll-progress" aria-hidden="true" />
       </header>
 
       <section className="overflow-hidden bg-[linear-gradient(180deg,#fffaf6_0%,#f8efe9_100%)] pb-12 pt-8 sm:pt-12 lg:pb-16 lg:pt-14">
@@ -283,7 +547,7 @@ export function BeautyNailDemoPage({
                 <Button
                   size="lg"
                   asChild
-                  className="bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)]"
+                  className="beauty-action bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)]"
                 >
                   <a href={data.hero.primaryCta.href}>
                     <Sparkles />
@@ -294,7 +558,7 @@ export function BeautyNailDemoPage({
                   size="lg"
                   variant="outline"
                   asChild
-                  className="border-[var(--beauty-rose)] bg-white text-[var(--beauty-rose-deep)] tracking-normal hover:bg-[var(--beauty-panel-soft)]"
+                  className="beauty-action border-[var(--beauty-rose)] bg-white text-[var(--beauty-rose-deep)] tracking-normal hover:bg-[var(--beauty-panel-soft)]"
                 >
                   <a href={data.hero.secondaryCta.href}>
                     <MessageCircle />
@@ -338,7 +602,7 @@ export function BeautyNailDemoPage({
 
           <Reveal delay={0.08}>
             <div className="relative">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-lg border border-white bg-white shadow-[0_24px_80px_rgba(116,68,72,0.16)] sm:aspect-[5/4] lg:aspect-[16/11]">
+              <div className="beauty-hero-media relative aspect-[16/9] overflow-hidden rounded-lg border border-white bg-white shadow-[0_24px_80px_rgba(116,68,72,0.16)] sm:aspect-[5/4] lg:aspect-[16/11]">
                 <Image
                   src={data.hero.image.src}
                   alt={data.hero.image.alt}
@@ -417,7 +681,7 @@ export function BeautyNailDemoPage({
                   onClick={() => setActiveCategory(category)}
                   aria-pressed={activeCategory === category}
                   className={cn(
-                    "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
+                    "beauty-filter shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
                     activeCategory === category
                       ? "border-[var(--beauty-rose-deep)] bg-[var(--beauty-rose-deep)] text-white shadow-[0_10px_26px_rgba(143,62,75,0.18)]"
                       : "border-[var(--beauty-line)] bg-white text-[var(--beauty-muted)] hover:text-[var(--beauty-rose-deep)]",
@@ -434,7 +698,7 @@ export function BeautyNailDemoPage({
               <StaggerItem
                 key={work.id}
                 className={cn(
-                  "group overflow-hidden rounded-lg border border-[var(--beauty-line)] bg-white shadow-[0_16px_48px_rgba(116,68,72,0.08)]",
+                  "beauty-work-card group overflow-hidden rounded-lg border border-[var(--beauty-line)] bg-white shadow-[0_16px_48px_rgba(116,68,72,0.08)]",
                   index === 0 && "sm:row-span-2 lg:col-span-2",
                   index === 1 && "lg:row-span-2",
                   index === 5 && "lg:col-span-2",
@@ -654,7 +918,7 @@ export function BeautyNailDemoPage({
                 <Button
                   type="submit"
                   size="lg"
-                  className="bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)]"
+                  className="beauty-action bg-[var(--beauty-rose-deep)] text-white tracking-normal hover:bg-[var(--beauty-rose)]"
                 >
                   <CalendarCheck />
                   提交预约意向
@@ -885,7 +1149,7 @@ export function BeautyNailDemoPage({
               <CardContent className="grid gap-3">
                 <Button
                   asChild
-                  className="bg-white text-[var(--beauty-rose-deep)] tracking-normal hover:bg-[var(--beauty-panel-soft)]"
+                  className="beauty-action bg-white text-[var(--beauty-rose-deep)] tracking-normal hover:bg-[var(--beauty-panel-soft)]"
                 >
                   <a href={data.contact.wechatHref}>
                     <MessageCircle />
@@ -895,7 +1159,7 @@ export function BeautyNailDemoPage({
                 <Button
                   variant="outline"
                   asChild
-                  className="border-white/30 text-white tracking-normal hover:bg-white/10"
+                  className="beauty-action border-white/30 text-white tracking-normal hover:bg-white/10"
                 >
                   <a href={data.contact.phoneHref}>
                     <Phone />
@@ -905,7 +1169,7 @@ export function BeautyNailDemoPage({
                 <Button
                   variant="outline"
                   asChild
-                  className="border-white/30 text-white tracking-normal hover:bg-white/10"
+                  className="beauty-action border-white/30 text-white tracking-normal hover:bg-white/10"
                 >
                   <a
                     href={data.contact.navigationUrl}
@@ -939,7 +1203,7 @@ export function BeautyNailDemoPage({
             variant="outline"
             size="sm"
             asChild
-            className="h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
+            className="beauty-action h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
           >
             <a href={data.contact.wechatHref}>
               <MessageCircle />
@@ -950,7 +1214,7 @@ export function BeautyNailDemoPage({
             variant="outline"
             size="sm"
             asChild
-            className="h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
+            className="beauty-action h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
           >
             <a href={data.contact.phoneHref}>
               <Phone />
@@ -961,7 +1225,7 @@ export function BeautyNailDemoPage({
             variant="outline"
             size="sm"
             asChild
-            className="h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
+            className="beauty-action h-11 border-[var(--beauty-line)] bg-white px-2 text-xs text-[var(--beauty-rose-deep)] tracking-normal"
           >
             <a
               href={data.contact.navigationUrl}
@@ -975,7 +1239,7 @@ export function BeautyNailDemoPage({
           <Button
             size="sm"
             asChild
-            className="h-11 bg-[var(--beauty-rose-deep)] px-2 text-xs text-white tracking-normal hover:bg-[var(--beauty-rose)]"
+            className="beauty-action h-11 bg-[var(--beauty-rose-deep)] px-2 text-xs text-white tracking-normal hover:bg-[var(--beauty-rose)]"
           >
             <a href="#reservation">
               <CalendarCheck />
