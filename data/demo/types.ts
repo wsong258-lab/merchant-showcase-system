@@ -126,3 +126,130 @@ export type RestaurantDemoData = {
     secondaryNote: string;
   };
 };
+
+export type BeautyNailDemoData = {
+  industry: "beauty-nail";
+  brand: {
+    name: string;
+    shortName: string;
+    logoMark: string;
+    positioning: string;
+    tagline: string;
+    city: string;
+  };
+  nav: NavItem[];
+  contact: {
+    status: string;
+    shortAddress: string;
+    address: string;
+    hours: string[];
+    phone: string;
+    phoneHref: string;
+    wechat: string;
+    wechatHref: string;
+    navigationUrl: string;
+  };
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    image: MediaAsset;
+    primaryCta: CtaLink;
+    secondaryCta: CtaLink;
+    highlights: string[];
+  };
+  works: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    categories: string[];
+    items: Array<{
+      id: string;
+      category: string;
+      title: string;
+      style: string;
+      price: string;
+      image: MediaAsset;
+      featured?: boolean;
+    }>;
+  };
+  services: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    groups: Array<{
+      title: string;
+      description: string;
+      items: Array<{
+        name: string;
+        description: string;
+        price: string;
+        badge?: string;
+      }>;
+    }>;
+  };
+  campaigns: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: Array<{
+      title: string;
+      description: string;
+      price: string;
+    }>;
+  };
+  reservation: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    projects: string[];
+    timeSlots: string[];
+    removalOptions: string[];
+    technicianOptions: string[];
+    stylePlaceholder: string;
+    notePlaceholder: string;
+    successMessage: string;
+  };
+  hygiene: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    image: MediaAsset;
+    items: Array<{
+      title: string;
+      description: string;
+    }>;
+  };
+  artists: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: Array<{
+      name: string;
+      role: string;
+      experience: string;
+      style: string;
+      projects: string[];
+      image: MediaAsset;
+    }>;
+  };
+  testimonials: {
+    eyebrow: string;
+    title: string;
+    items: Array<{
+      quote: string;
+      name: string;
+      tag: string;
+    }>;
+  };
+  notices: {
+    eyebrow: string;
+    title: string;
+    items: string[];
+  };
+  story: {
+    eyebrow: string;
+    title: string;
+    body: string;
+  };
+};
