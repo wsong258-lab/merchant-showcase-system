@@ -1,0 +1,15 @@
+export { AboutSection } from "@/components/sections/drinks-shop/AboutSection";
+export { DrinkImage } from "@/components/sections/drinks-shop/DrinkImage";
+export { DrinksBottomBar } from "@/components/sections/drinks-shop/DrinksBottomBar";
+export { DrinksButton } from "@/components/sections/drinks-shop/DrinksButton";
+export { DrinksHeader } from "@/components/sections/drinks-shop/DrinksHeader";
+export { DrinksHero } from "@/components/sections/drinks-shop/DrinksHero";
+export { DrinksSectionHeading } from "@/components/sections/drinks-shop/DrinksSectionHeading";
+export { DrinksShopPage } from "@/components/sections/drinks-shop/DrinksShopPage";
+export { EnvironmentSection } from "@/components/sections/drinks-shop/EnvironmentSection";
+export { MenuSection } from "@/components/sections/drinks-shop/MenuSection";
+export { OpenStatus } from "@/components/sections/drinks-shop/OpenStatus";
+export { OrderFormSection } from "@/components/sections/drinks-shop/OrderFormSection";
+export { PromotionsSection } from "@/components/sections/drinks-shop/PromotionsSection";
+export { TodayPicksSection } from "@/components/sections/drinks-shop/TodayPicksSection";
+export { VisitSection } from "@/components/sections/drinks-shop/VisitSection";
