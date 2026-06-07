@@ -1,4 +1,5 @@
 export { BrandStorySection } from "@/components/sections/BrandStorySection";
+export { BeautyNailDemoPage } from "@/components/sections/BeautyNailDemoPage";
 export { GalleryWallSection } from "@/components/sections/GalleryWallSection";
 export { MenuShowcaseSection } from "@/components/sections/MenuShowcaseSection";
 export { MobileContactBar } from "@/components/sections/MobileContactBar";
